@@ -1,66 +1,85 @@
 import * as fs from "fs";
 import * as shelljs from "shelljs";
-import DirectoryInfo from "./DirectoryInfo";
 import * as path from "path"
-
+import DirectoryInfo from "./DirectoryInfo";
 
 export default class FileInfo {
-    constructor(directoryPath: string) {
-        this.FullName = path.resolve(directoryPath)
+    private _filePath: string;
+
+    constructor(filePath: string) {
+        filePath = path.resolve(path.normalize(filePath));
+        this._filePath = filePath;
     }
-    //--------------- properties ------------
-    Attributes: fs.Stats; //file size info 
-    CreationTime: Date;
-    LastAccessTime: Date;
-    LastWriteTime: Date;
-    Directory: DirectoryInfo; //return a DirectoryInfo instance
-    DirectoryName: string;
-    Exists: boolean;
-    Extension: string;
-    FullName: string;
-    Length: number;
-    Size: number;
-    Name: string;
+
+    get name(): string | null {
+
+        return path.basename(this._filePath);
+
+    }
+
+    get extension(): string {
+        return path.extname(this._filePath);
+    }
+
+
+    get fullName(): string {
+        return this._filePath;
+    }
+
+    get directoryName(): string | null {
+        if (this.directory) {
+            return this.directory.name;
+        }
+        return null;
+    }
+
+
+    get directory(): DirectoryInfo | null {
+        if (this.exists) {
+            return new DirectoryInfo(path.dirname(this._filePath));
+        }
+        return null;
+    }
+
+    get exists(): boolean {
+        return fs.existsSync(this._filePath) && fs.statSync(this._filePath).isFile();
+    }
+
+    get attributes(): fs.Stats | null {
+        if (this.exists) {
+            return fs.statSync(this._filePath);
+        }
+        return null;
+    }
+
+    get stat(): fs.Stats | null {
+        if (this.exists) {
+            return fs.statSync(this._filePath);
+        }
+        return null;
+    }
+
 
     //------------ functions ------------
-    appendText(txt: String) {
-
-    };
     delete(): void {
-        if (fs.existsSync(this.FullName)) {
-            fs.unlinkSync(this.FullName);
-        }
+        if (!this.exists) return;
+        shelljs.rm(this.fullName);
     };
-
-    /**
-     * 
-     * @param distPath 
-     * @param cover 
-     */
-    copyTo(distPath: string, cover: boolean = false): void {
-        if (!cover) {
-            if (fs.existsSync(distPath)) {
-                throw new Error("dist file exists");
-            }
-        }
-        shelljs.cp(this.FullName, distPath);
-    };
-
-    /**
-     * 
-     * @param distPath 
-     * @param cover 
-     */
-    moveTo(distPath: string, cover: boolean = false) {
-        if (!cover) {
-            if (fs.existsSync(distPath)) {
-                throw new Error("dist file exists");
-            }
-        }
-        shelljs.mv(this.FullName, distPath);
-    };
-
+    copyTo(distPath: string) {
+        if (!this.exists) return;
+        shelljs.mkdir("-p", path.dirname(distPath));
+        shelljs.cp(this.fullName, distPath);
+    }
+    moveTo(distPath: string) {
+        if (!this.exists) return;
+        shelljs.mkdir("-p", path.dirname(distPath));
+        shelljs.mv(this.fullName, distPath);
+    }
     create(): void {
-        shelljs.touch(this.FullName)
+        if (!this.exists) {
+            shelljs.mkdir("-p", path.dirname(this.fullName));
+            shelljs.touch(this.fullName)
+        }
     };
 }
+

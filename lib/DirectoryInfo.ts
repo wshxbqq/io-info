@@ -1,95 +1,141 @@
 import * as fs from "fs";
-import FileInfo from "./FileInfo"
 import * as shelljs from "shelljs";
 import * as path from "path"
+import FileInfo from "./FileInfo"
 
 export default class DirectoryInfo {
+    private _directoryPath: string;
+
     constructor(directoryPath: string) {
-        let stats = fs.statSync(directoryPath);
-        this.FullName = path.resolve(directoryPath);
-        this.Attributes = stats;
-        this.CreationTime = stats.birthtime;
-        this.LastAccessTime = stats.atime;
-        this.LastWriteTime = stats.mtime;
-        this.Parent = new DirectoryInfo(path.dirname(directoryPath));
-        //this.Root = path.resolve(directoryPath);
-        this.length = stats.size;
-        this.size = stats.size;
-        this.name = path.resolve(directoryPath);
+        directoryPath = path.resolve(path.normalize(directoryPath));
+        this._directoryPath = directoryPath;
 
     }
-    //--------------- properties ------------
-    Attributes: fs.Stats; //file size info 
-    CreationTime: Date;
-    LastAccessTime: Date;
-    LastWriteTime: Date;
-    Parent: DirectoryInfo; //return a DirectoryInfo instance
-    Root: DirectoryInfo;
-    Exists: boolean;
-    Extension: string;
-    FullName: string;
-    Length: number;
-    size: number;
-    name: string;
+
+
+    get name(): string {
+        return path.basename(this._directoryPath);
+    }
+
+    get extension(): string {
+        return path.extname(this._directoryPath);
+    }
+
+    get fullName(): string {
+        return this._directoryPath;
+    }
+
+    get root(): DirectoryInfo {
+        if (this.exists) {
+            let root = path.dirname(this._directoryPath);
+            while (root != path.dirname(root)) {
+                root = path.dirname(root);
+            }
+            return new DirectoryInfo(root);
+        }
+        return;
+    }
+
+    get parentName(): string {
+        if (this.parent) {
+            return this.parent.name;
+        }
+        return;
+    }
+
+
+    get parent(): DirectoryInfo {
+        if (this.exists) {
+            return new DirectoryInfo(path.dirname(this._directoryPath));
+        }
+        return;
+    }
+
+    get exists(): boolean {
+        return fs.existsSync(this._directoryPath) && fs.statSync(this._directoryPath).isDirectory();
+    }
+
+    get attributes(): fs.Stats {
+        if (this.exists) {
+            return fs.statSync(this._directoryPath);
+        }
+        return;
+    }
+
+    get stat(): fs.Stats {
+        if (this.exists) {
+            return fs.statSync(this._directoryPath);
+        }
+        return;
+    }
+
+
 
     //------------ functions ------------
 
     delete(): void {
-        shelljs.rm("-rf", this.FullName)
+        if (!this.exists) return;
+        shelljs.rm("-rf", this.fullName)
     }
-
+    copyTo(distPath: string) {
+        if (!this.exists) return;
+        shelljs.mkdir("-p", distPath)
+        shelljs.cp("-R", this.fullName, distPath);
+    }
     moveTo(distPath: string) {
-        shelljs.mv([this.FullName], distPath);
+        if (!this.exists) return;
+        shelljs.mkdir("-p", distPath);
+        shelljs.mv(this.fullName, distPath);
     }
     create(): void {
-        shelljs.mkdir("-p", this.FullName)
+        shelljs.mkdir("-p", this.fullName)
     };
 
     getFiles(topOnly: boolean = true, regFilter?: RegExp): FileInfo[] {
+        if (!this.exists) return;
         function arr2FileInfo(arr: string[]): FileInfo[] {
             return arr.filter(item => {
-                let absPath = path.resolve(item);
-                if (fs.statSync(absPath).isFile()) {
+                if (fs.existsSync(item) && fs.statSync(item).isFile()) {
                     if (regFilter) {
-                        return absPath.replace(path.normalize(item), '').match(regFilter).length;
+                        return item.match(regFilter).length;
                     } else {
                         return true;
                     }
                 }
-                return fs.statSync(absPath).isFile()
             }).map(item => {
                 return new FileInfo(item);
             })
         }
         if (topOnly) {
-            return arr2FileInfo(shelljs.ls(this.FullName));
+            return arr2FileInfo(shelljs.ls(this.fullName).map(item => {
+                return path.join(this.name, item)
+            }));
         } else {
-            return arr2FileInfo(shelljs.find(this.FullName));
+            return arr2FileInfo(shelljs.find(this.fullName));
         }
     }
 
-    getDirectories(topOnly: boolean = true, regFilter?: RegExp) {
-        function arr2DirectoryInfo(arr: string[]): FileInfo[] {
+    getDirectories(topOnly: boolean = true, regFilter?: RegExp): DirectoryInfo[] {
+        if (!this.exists) return;
+        function arr2DirectoryInfo(arr: string[]): DirectoryInfo[] {
             return arr.filter(item => {
-                let absPath = path.resolve(item);
-                if (fs.statSync(absPath).isDirectory()) {
+                if (fs.existsSync(item) && fs.statSync(item).isDirectory()) {
                     if (regFilter) {
-                        return absPath.replace(path.normalize(item), '').match(regFilter).length;
+                        return item.match(regFilter).length;
                     } else {
                         return true;
                     }
                 }
-                return fs.statSync(absPath).isFile()
             }).map(item => {
-                return new FileInfo(item);
+                return new DirectoryInfo(item);
             })
         }
-
         if (topOnly) {
-            return arr2DirectoryInfo(shelljs.ls(this.FullName));
+            return arr2DirectoryInfo(shelljs.ls(this.fullName).map(item => {
+                return path.join(this.name, item)
+            }));
         } else {
-            return arr2DirectoryInfo(shelljs.find(this.FullName));
+            return arr2DirectoryInfo(shelljs.find(this.fullName));
         }
     }
 }
-

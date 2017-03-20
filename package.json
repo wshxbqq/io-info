@@ -22,7 +22,6 @@
   "homepage": "https://github.com/wshxbqq/node-io-info#readme",
   "dependencies": {
     "@types/shelljs": "^0.7.0",
-    "dts-generator": "^2.1.0",
     "shelljs": "^0.7.7"
   }
 }

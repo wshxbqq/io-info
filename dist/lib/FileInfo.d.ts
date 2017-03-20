@@ -2,22 +2,18 @@
 import * as fs from "fs";
 import DirectoryInfo from "./DirectoryInfo";
 export default class FileInfo {
-    constructor(directoryPath: string);
-    Attributes: fs.Stats;
-    CreationTime: Date;
-    LastAccessTime: Date;
-    LastWriteTime: Date;
-    Directory: DirectoryInfo;
-    DirectoryName: string;
-    Exists: boolean;
-    Extension: string;
-    FullName: string;
-    Length: number;
-    Size: number;
-    Name: string;
-    appendText(txt: String): void;
+    private _filePath;
+    constructor(filePath: string);
+    readonly name: string | null;
+    readonly extension: string;
+    readonly fullName: string;
+    readonly directoryName: string | null;
+    readonly directory: DirectoryInfo | null;
+    readonly exists: boolean;
+    readonly attributes: fs.Stats | null;
+    readonly stat: fs.Stats | null;
     delete(): void;
-    copyTo(distPath: string, cover?: boolean): void;
-    moveTo(distPath: string, cover?: boolean): void;
+    copyTo(distPath: string): void;
+    moveTo(distPath: string): void;
     create(): void;
 }

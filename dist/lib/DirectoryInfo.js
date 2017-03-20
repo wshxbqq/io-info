@@ -1,82 +1,173 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
-var FileInfo_1 = require("./FileInfo");
 var shelljs = require("shelljs");
 var path = require("path");
+var FileInfo_1 = require("./FileInfo");
 var DirectoryInfo = (function () {
     function DirectoryInfo(directoryPath) {
-        var stats = fs.statSync(directoryPath);
-        this.FullName = path.resolve(directoryPath);
-        this.Attributes = stats;
-        this.CreationTime = stats.birthtime;
-        this.LastAccessTime = stats.atime;
-        this.LastWriteTime = stats.mtime;
-        this.Parent = new DirectoryInfo(path.dirname(directoryPath));
-        this.length = stats.size;
-        this.size = stats.size;
-        this.name = path.resolve(directoryPath);
+        directoryPath = path.resolve(path.normalize(directoryPath));
+        this._directoryPath = directoryPath;
     }
-    DirectoryInfo.prototype["delete"] = function () {
-        shelljs.rm("-rf", this.FullName);
+    Object.defineProperty(DirectoryInfo.prototype, "name", {
+        get: function () {
+            return path.basename(this._directoryPath);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "extension", {
+        get: function () {
+            return path.extname(this._directoryPath);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "fullName", {
+        get: function () {
+            return this._directoryPath;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "root", {
+        get: function () {
+            if (this.exists) {
+                var root = path.dirname(this._directoryPath);
+                while (root != path.dirname(root)) {
+                    root = path.dirname(root);
+                }
+                return new DirectoryInfo(root);
+            }
+            return;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "parentName", {
+        get: function () {
+            if (this.parent) {
+                return this.parent.name;
+            }
+            return;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "parent", {
+        get: function () {
+            if (this.exists) {
+                return new DirectoryInfo(path.dirname(this._directoryPath));
+            }
+            return;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "exists", {
+        get: function () {
+            return fs.existsSync(this._directoryPath) && fs.statSync(this._directoryPath).isDirectory();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "attributes", {
+        get: function () {
+            if (this.exists) {
+                return fs.statSync(this._directoryPath);
+            }
+            return;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "stat", {
+        get: function () {
+            if (this.exists) {
+                return fs.statSync(this._directoryPath);
+            }
+            return;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DirectoryInfo.prototype.delete = function () {
+        if (!this.exists)
+            return;
+        shelljs.rm("-rf", this.fullName);
+    };
+    DirectoryInfo.prototype.copyTo = function (distPath) {
+        if (!this.exists)
+            return;
+        shelljs.mkdir("-p", distPath);
+        shelljs.cp("-R", this.fullName, distPath);
     };
     DirectoryInfo.prototype.moveTo = function (distPath) {
-        shelljs.mv([this.FullName], distPath);
+        if (!this.exists)
+            return;
+        shelljs.mkdir("-p", distPath);
+        shelljs.mv(this.fullName, distPath);
     };
     DirectoryInfo.prototype.create = function () {
-        shelljs.mkdir("-p", this.FullName);
+        shelljs.mkdir("-p", this.fullName);
     };
     ;
     DirectoryInfo.prototype.getFiles = function (topOnly, regFilter) {
+        var _this = this;
         if (topOnly === void 0) { topOnly = true; }
+        if (!this.exists)
+            return;
         function arr2FileInfo(arr) {
             return arr.filter(function (item) {
-                var absPath = path.resolve(item);
-                if (fs.statSync(absPath).isFile()) {
+                if (fs.existsSync(item) && fs.statSync(item).isFile()) {
                     if (regFilter) {
-                        return absPath.replace(path.normalize(item), '').match(regFilter).length;
+                        return item.match(regFilter).length;
                     }
                     else {
                         return true;
                     }
                 }
-                return fs.statSync(absPath).isFile();
             }).map(function (item) {
-                return new FileInfo_1["default"](item);
+                return new FileInfo_1.default(item);
             });
         }
         if (topOnly) {
-            return arr2FileInfo(shelljs.ls(this.FullName));
+            return arr2FileInfo(shelljs.ls(this.fullName).map(function (item) {
+                return path.join(_this.name, item);
+            }));
         }
         else {
-            return arr2FileInfo(shelljs.find(this.FullName));
+            return arr2FileInfo(shelljs.find(this.fullName));
         }
     };
     DirectoryInfo.prototype.getDirectories = function (topOnly, regFilter) {
+        var _this = this;
         if (topOnly === void 0) { topOnly = true; }
+        if (!this.exists)
+            return;
         function arr2DirectoryInfo(arr) {
             return arr.filter(function (item) {
-                var absPath = path.resolve(item);
-                if (fs.statSync(absPath).isDirectory()) {
+                if (fs.existsSync(item) && fs.statSync(item).isDirectory()) {
                     if (regFilter) {
-                        return absPath.replace(path.normalize(item), '').match(regFilter).length;
+                        return item.match(regFilter).length;
                     }
                     else {
                         return true;
                     }
                 }
-                return fs.statSync(absPath).isFile();
             }).map(function (item) {
-                return new FileInfo_1["default"](item);
+                return new DirectoryInfo(item);
             });
         }
         if (topOnly) {
-            return arr2DirectoryInfo(shelljs.ls(this.FullName));
+            return arr2DirectoryInfo(shelljs.ls(this.fullName).map(function (item) {
+                return path.join(_this.name, item);
+            }));
         }
         else {
-            return arr2DirectoryInfo(shelljs.find(this.FullName));
+            return arr2DirectoryInfo(shelljs.find(this.fullName));
         }
     };
     return DirectoryInfo;
 }());
-exports.__esModule = true;
-exports["default"] = DirectoryInfo;
+exports.default = DirectoryInfo;
