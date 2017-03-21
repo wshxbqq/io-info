@@ -14,7 +14,7 @@ API:
 
 __FileInfo__ 
 
-```
+```javascript
 const io = require("io-info")
 let f1 = new io.FileInfo("simple/1.txt"); //FileInfo in c#.net
 f1.create();
@@ -32,7 +32,7 @@ io.FileInfo.readAllText(f1.fullName)
 
 __DirectoryInfo__
 
-```
+```javascript
 const io = require("io-info")
 let d1 = new io.DirectoryInfo("simple");//DirectoryInfo in c#.net
 d1.copyTo("simple1");
