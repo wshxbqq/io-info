@@ -12,7 +12,6 @@ export default class DirectoryInfo {
 
     }
 
-
     get name(): string {
         return path.basename(this._directoryPath);
     }
@@ -69,10 +68,27 @@ export default class DirectoryInfo {
         return;
     }
 
+    /**
+     * folder size
+     */
+    get size(): number {
+        let size = 0;
+        if (this.exists) {
+            this.getFiles(true).map(item => {
+                size += item.size;
+            })
+        }
+        return size;
+    }
 
+    /**
+     * synonym with size
+     */
+    get length(): number {
+        return this.size;
+    }
 
     //------------ functions ------------
-
     delete(): void {
         if (!this.exists) return;
         shelljs.rm("-rf", this.fullName)
@@ -91,7 +107,7 @@ export default class DirectoryInfo {
         shelljs.mkdir("-p", this.fullName)
     };
 
-    getFiles(topOnly: boolean = true, regFilter?: RegExp): FileInfo[] {
+    getFiles(recursion: boolean = false, regFilter?: RegExp): FileInfo[] {
         if (!this.exists) return;
         function arr2FileInfo(arr: string[]): FileInfo[] {
             return arr.filter(item => {
@@ -106,7 +122,7 @@ export default class DirectoryInfo {
                 return new FileInfo(item);
             })
         }
-        if (topOnly) {
+        if (!recursion) {
             return arr2FileInfo(shelljs.ls(this.fullName).map(item => {
                 return path.join(this.name, item)
             }));
@@ -115,7 +131,7 @@ export default class DirectoryInfo {
         }
     }
 
-    getDirectories(topOnly: boolean = true, regFilter?: RegExp): DirectoryInfo[] {
+    getDirectories(recursion: boolean = false, regFilter?: RegExp): DirectoryInfo[] {
         if (!this.exists) return;
         function arr2DirectoryInfo(arr: string[]): DirectoryInfo[] {
             return arr.filter(item => {
@@ -130,7 +146,7 @@ export default class DirectoryInfo {
                 return new DirectoryInfo(item);
             })
         }
-        if (topOnly) {
+        if (!recursion) {
             return arr2DirectoryInfo(shelljs.ls(this.fullName).map(item => {
                 return path.join(this.name, item)
             }));

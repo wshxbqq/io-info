@@ -13,10 +13,12 @@ export default class DirectoryInfo {
     readonly exists: boolean;
     readonly attributes: fs.Stats;
     readonly stat: fs.Stats;
+    readonly size: number;
+    readonly length: number;
     delete(): void;
     copyTo(distPath: string): void;
     moveTo(distPath: string): void;
     create(): void;
-    getFiles(topOnly?: boolean, regFilter?: RegExp): FileInfo[];
-    getDirectories(topOnly?: boolean, regFilter?: RegExp): DirectoryInfo[];
+    getFiles(recursion?: boolean, regFilter?: RegExp): FileInfo[];
+    getDirectories(recursion?: boolean, regFilter?: RegExp): DirectoryInfo[];
 }

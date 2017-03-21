@@ -1,10 +1,10 @@
 {
-  "name": "node-io-info",
+  "name": "io-info",
   "version": "1.0.0",
   "description": "Nodejs file api  just like FileInfo & DirectoryInfo in C#",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/test.js"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var shelljs = require("shelljs");
 var path = require("path");
@@ -35,7 +34,6 @@ var FileInfo = (function () {
             if (this.directory) {
                 return this.directory.name;
             }
-            return null;
         },
         enumerable: true,
         configurable: true
@@ -45,7 +43,6 @@ var FileInfo = (function () {
             if (this.exists) {
                 return new DirectoryInfo_1.default(path.dirname(this._filePath));
             }
-            return null;
         },
         enumerable: true,
         configurable: true
@@ -62,7 +59,6 @@ var FileInfo = (function () {
             if (this.exists) {
                 return fs.statSync(this._filePath);
             }
-            return null;
         },
         enumerable: true,
         configurable: true
@@ -72,7 +68,23 @@ var FileInfo = (function () {
             if (this.exists) {
                 return fs.statSync(this._filePath);
             }
-            return null;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FileInfo.prototype, "size", {
+        get: function () {
+            if (this.exists) {
+                return this.stat.size;
+            }
+            return 0;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FileInfo.prototype, "length", {
+        get: function () {
+            return this.size;
         },
         enumerable: true,
         configurable: true
@@ -102,6 +114,42 @@ var FileInfo = (function () {
         }
     };
     ;
+    FileInfo.prototype.buffer = function () {
+        if (this.exists) {
+            return fs.readFileSync(this.fullName);
+        }
+    };
+    FileInfo.prototype.stringContent = function (encoding) {
+        if (encoding === void 0) { encoding = "utf-8"; }
+        var buffer = this.buffer();
+        if (buffer) {
+            return buffer.toString(encoding);
+        }
+    };
+    FileInfo.writeAllText = function (filePath, content, encoding) {
+        if (content === void 0) { content = ""; }
+        if (encoding === void 0) { encoding = "utf-8"; }
+        shelljs.mkdir("-p", path.dirname(filePath));
+        fs.writeFileSync(filePath, content, {
+            encoding: encoding
+        });
+    };
+    ;
+    FileInfo.readAllTextBuffer = function (filePath) {
+        var file = new FileInfo(filePath);
+        if (file.exists) {
+            return fs.readFileSync(filePath);
+        }
+    };
+    FileInfo.readAllText = function (filePath, encoding) {
+        if (encoding === void 0) { encoding = "utf8"; }
+        var buffer = FileInfo.readAllTextBuffer(filePath);
+        if (buffer) {
+            return buffer.toString(encoding);
+        }
+    };
     return FileInfo;
 }());
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FileInfo;
+//# sourceMappingURL=FileInfo.js.map

@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var shelljs = require("shelljs");
 var path = require("path");
@@ -91,6 +90,26 @@ var DirectoryInfo = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DirectoryInfo.prototype, "size", {
+        get: function () {
+            var size = 0;
+            if (this.exists) {
+                this.getFiles(true).map(function (item) {
+                    size += item.size;
+                });
+            }
+            return size;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectoryInfo.prototype, "length", {
+        get: function () {
+            return this.size;
+        },
+        enumerable: true,
+        configurable: true
+    });
     DirectoryInfo.prototype.delete = function () {
         if (!this.exists)
             return;
@@ -112,9 +131,9 @@ var DirectoryInfo = (function () {
         shelljs.mkdir("-p", this.fullName);
     };
     ;
-    DirectoryInfo.prototype.getFiles = function (topOnly, regFilter) {
+    DirectoryInfo.prototype.getFiles = function (recursion, regFilter) {
         var _this = this;
-        if (topOnly === void 0) { topOnly = true; }
+        if (recursion === void 0) { recursion = false; }
         if (!this.exists)
             return;
         function arr2FileInfo(arr) {
@@ -131,7 +150,7 @@ var DirectoryInfo = (function () {
                 return new FileInfo_1.default(item);
             });
         }
-        if (topOnly) {
+        if (!recursion) {
             return arr2FileInfo(shelljs.ls(this.fullName).map(function (item) {
                 return path.join(_this.name, item);
             }));
@@ -140,9 +159,9 @@ var DirectoryInfo = (function () {
             return arr2FileInfo(shelljs.find(this.fullName));
         }
     };
-    DirectoryInfo.prototype.getDirectories = function (topOnly, regFilter) {
+    DirectoryInfo.prototype.getDirectories = function (recursion, regFilter) {
         var _this = this;
-        if (topOnly === void 0) { topOnly = true; }
+        if (recursion === void 0) { recursion = false; }
         if (!this.exists)
             return;
         function arr2DirectoryInfo(arr) {
@@ -159,7 +178,7 @@ var DirectoryInfo = (function () {
                 return new DirectoryInfo(item);
             });
         }
-        if (topOnly) {
+        if (!recursion) {
             return arr2DirectoryInfo(shelljs.ls(this.fullName).map(function (item) {
                 return path.join(_this.name, item);
             }));
@@ -170,4 +189,6 @@ var DirectoryInfo = (function () {
     };
     return DirectoryInfo;
 }());
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DirectoryInfo;
+//# sourceMappingURL=DirectoryInfo.js.map
