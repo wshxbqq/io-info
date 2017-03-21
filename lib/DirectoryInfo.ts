@@ -95,12 +95,12 @@ export default class DirectoryInfo {
     }
     copyTo(distPath: string) {
         if (!this.exists) return;
-        shelljs.mkdir("-p", distPath)
+        shelljs.mkdir("-p",path.dirname(distPath));
         shelljs.cp("-R", this.fullName, distPath);
     }
     moveTo(distPath: string) {
         if (!this.exists) return;
-        shelljs.mkdir("-p", distPath);
+        shelljs.mkdir("-p", path.dirname(distPath));
         shelljs.mv(this.fullName, distPath);
     }
     create(): void {

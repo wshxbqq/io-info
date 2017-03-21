@@ -11,7 +11,7 @@ export default class FileInfo {
         this._filePath = filePath;
     }
 
-    get name(): string | null {
+    get name(): string {
         return path.basename(this._filePath);
     }
 
@@ -74,12 +74,12 @@ export default class FileInfo {
         if (!this.exists) return;
         shelljs.mkdir("-p", path.dirname(distPath));
         shelljs.cp(this.fullName, distPath);
-    }
+    };
     moveTo(distPath: string) {
         if (!this.exists) return;
         shelljs.mkdir("-p", path.dirname(distPath));
         shelljs.mv(this.fullName, distPath);
-    }
+    };
     create(): void {
         if (!this.exists) {
             shelljs.mkdir("-p", path.dirname(this.fullName));
@@ -91,14 +91,14 @@ export default class FileInfo {
         if (this.exists) {
             return fs.readFileSync(this.fullName);
         }
-    }
+    };
 
     stringContent(encoding: string = "utf-8"): string {
         let buffer = this.buffer();
         if (buffer) {
             return buffer.toString(encoding);
         }
-    }
+    };
 
     public static writeAllText(filePath: string, content: string = "", encoding: string = "utf-8"): void {
         shelljs.mkdir("-p", path.dirname(filePath));
@@ -113,13 +113,13 @@ export default class FileInfo {
         if (file.exists) {
             return fs.readFileSync(filePath)
         }
-    }
+    };
 
     public static readAllText(filePath: string, encoding: string = "utf8"): string {
         let buffer = FileInfo.readAllTextBuffer(filePath);
         if (buffer) {
             return buffer.toString(encoding);
         }
-    }
+    };
 }
 
