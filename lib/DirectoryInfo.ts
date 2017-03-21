@@ -72,20 +72,15 @@ export default class DirectoryInfo {
      * folder size
      */
     get size(): number {
+
         let size = 0;
         if (this.exists) {
             this.getFiles(true).map(item => {
+
                 size += item.size;
             })
         }
         return size;
-    }
-
-    /**
-     * synonym with size
-     */
-    get length(): number {
-        return this.size;
     }
 
     //------------ functions ------------
@@ -95,7 +90,7 @@ export default class DirectoryInfo {
     }
     copyTo(distPath: string) {
         if (!this.exists) return;
-        shelljs.mkdir("-p",path.dirname(distPath));
+        shelljs.mkdir("-p", path.dirname(distPath));
         shelljs.cp("-R", this.fullName, distPath);
     }
     moveTo(distPath: string) {
@@ -108,12 +103,13 @@ export default class DirectoryInfo {
     };
 
     getFiles(recursion: boolean = false, regFilter?: RegExp): FileInfo[] {
+        let that = this;
         if (!this.exists) return;
         function arr2FileInfo(arr: string[]): FileInfo[] {
             return arr.filter(item => {
                 if (fs.existsSync(item) && fs.statSync(item).isFile()) {
                     if (regFilter) {
-                        return item.match(regFilter).length;
+                        return !!item.replace(that.fullName, "").match(regFilter);
                     } else {
                         return true;
                     }
@@ -122,22 +118,20 @@ export default class DirectoryInfo {
                 return new FileInfo(item);
             })
         }
-        if (!recursion) {
-            return arr2FileInfo(shelljs.ls(this.fullName).map(item => {
-                return path.join(this.name, item)
-            }));
-        } else {
-            return arr2FileInfo(shelljs.find(this.fullName));
-        }
+        let args = recursion ? ["-R", this.fullName] : [this.fullName];
+        return arr2FileInfo(shelljs.ls(...args).map(item => {
+            return path.join(this.fullName, item)
+        }));
     }
 
     getDirectories(recursion: boolean = false, regFilter?: RegExp): DirectoryInfo[] {
+        let that = this;
         if (!this.exists) return;
         function arr2DirectoryInfo(arr: string[]): DirectoryInfo[] {
             return arr.filter(item => {
                 if (fs.existsSync(item) && fs.statSync(item).isDirectory()) {
                     if (regFilter) {
-                        return item.match(regFilter).length;
+                        return !!item.replace(that.fullName, "").match(regFilter);
                     } else {
                         return true;
                     }
@@ -146,12 +140,9 @@ export default class DirectoryInfo {
                 return new DirectoryInfo(item);
             })
         }
-        if (!recursion) {
-            return arr2DirectoryInfo(shelljs.ls(this.fullName).map(item => {
-                return path.join(this.name, item)
-            }));
-        } else {
-            return arr2DirectoryInfo(shelljs.find(this.fullName));
-        }
+        let args = recursion ? ["-R", this.fullName] : [this.fullName];
+        return arr2DirectoryInfo(shelljs.ls(...args).map(item => {
+            return path.join(that.fullName, item)
+        }));
     }
 }
