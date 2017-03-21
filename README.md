@@ -12,12 +12,11 @@ npm install io-info
 
 API:
 
-__FileInfo__
+__FileInfo__ 
 
 ```
-//just like FileInfo in c#.net
 const io = require("io-info")
-let f1 = new io.FileInfo("simple/1.txt");
+let f1 = new io.FileInfo("simple/1.txt"); //FileInfo in c#.net
 f1.create();
 f1.attributes;
 f1.exists;
@@ -34,9 +33,8 @@ io.FileInfo.readAllText(f1.fullName)
 __DirectoryInfo__
 
 ```
-//just like DirectoryInfo in c#.net
 const io = require("io-info")
-let d1 = new io.DirectoryInfo("simple");
+let d1 = new io.DirectoryInfo("simple");//DirectoryInfo in c#.net
 d1.copyTo("simple1");
 d1.size;
 d1.copyTo("dir4");
