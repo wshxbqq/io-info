@@ -1,6 +1,6 @@
 {
   "name": "io-info",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Nodejs file api  just like FileInfo & DirectoryInfo in C#",
   "main": "index.js",
   "scripts": {
