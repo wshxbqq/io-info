@@ -3,13 +3,13 @@ import * as shelljs from "shelljs";
 import * as path from "path"
 import FileInfo from "./FileInfo"
 
+
 export default class DirectoryInfo {
     private _directoryPath: string;
 
     constructor(directoryPath: string) {
         directoryPath = path.resolve(path.normalize(directoryPath));
         this._directoryPath = directoryPath;
-
     }
 
     get name(): string {
