@@ -1,7 +1,7 @@
 {
   "name": "io-info",
   "version": "1.0.7",
-  "description": "Nodejs file api  just like FileInfo & DirectoryInfo in C#",
+  "description": "Nodejs file api just like FileInfo & DirectoryInfo in C#",
   "main": "index.js",
   "scripts": {
     "test": "node test/test.js"
@@ -21,7 +21,8 @@
   },
   "homepage": "https://github.com/wshxbqq/node-io-info#readme",
   "dependencies": {
-    "@types/shelljs": "^0.7.0",
-    "shelljs": "^0.7.7"
+    "@types/shelljs": "^0.7.6",
+    "mkdirp": "^0.5.1",
+    "shelljs": "^0.7.8"
   }
 }
